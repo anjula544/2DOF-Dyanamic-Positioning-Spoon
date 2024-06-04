@@ -1,0 +1,2 @@
+uvicorn ml_api:app
+cd /D D:\Project\SpoonProject\Codes\ML_model_as_api\python_code
