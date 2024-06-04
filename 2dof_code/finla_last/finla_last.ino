@@ -1,12 +1,11 @@
 #include <ESP32_Servo.h>
 
 #include <PID_v1_bc.h>
-
 #include <Kalman.h>
 #include <Wire.h>
 
-//#include "Servo.h"
 #define RESTRICT_PITCH 
+
 Kalman kalmanX; // Create the Kalman instances
 Kalman kalmanY;
 
@@ -16,6 +15,7 @@ double gyroX, gyroY, gyroZ;
 
 Servo servo1;
 Servo servo2;
+Servo servo3;
 
 
 double gyroXangle, gyroYangle; // Angle calculate using the gyro only
@@ -27,12 +27,12 @@ uint8_t i2cData[14]; // Buffer for I2C data
 
 //PID data X
 double SetpointX ,InputX,OutputX ;
-double KpX =1.05, KiX = 0, KdX = 0;
+double KpX =1.1, KiX = 0.00000005, KdX = 0.0000005;
 PID PIDX(&InputX , &OutputX , &SetpointX , KpX, KiX , KdX, DIRECT) ;
 
 // PID data Y
 double SetpointY ,InputY,OutputY ;
-double KpY = 1.2, KiY = 0 , KdY = 0;
+double KpY = 1.1, KiY = 0.00000005 , KdY = 0.0000005;
 PID PIDY(&InputY , &OutputY , &SetpointY , KpY, KiY , KdY, DIRECT) ;
 
 // TODO: Make calibration routine
@@ -40,8 +40,9 @@ PID PIDY(&InputY , &OutputY , &SetpointY , KpY, KiY , KdY, DIRECT) ;
 void setup() {
   Serial.begin(115200);
   Wire.begin();
-  servo1.attach(18);
-  servo2.attach(19);
+  servo1.attach(32);
+  servo2.attach(33);
+  servo3.attach(34);
 
 #if ARDUINO >= 157
   Wire.setClock(400000UL); // Set I2C frequency to 400kHz
@@ -93,6 +94,7 @@ void setup() {
 
   servo1.write(0);
   servo2.write(0);
+  servo3.write(0);
 
 
   //Turn the PID
@@ -130,29 +132,18 @@ void loop() {
   PIDX.Compute();
   PIDY.Compute();
 
-   servo1.write(OutputY);
+  servo1.write(OutputY);
   servo2.write(OutputX);
+  servo3.write(OutputX);
 
 
   /* Print Data */
 
-  String data = "AccX"":" + String(accX) + ",";
-  data += "AccY"":" + String(accY) + ",";
-  data += "AccZ"":" + String(accZ) + ",";
-  data += "GyroX"":" + String(gyroX) + ",";
-  data += "GyroY"":" + String(gyroY) + ",";  // Include default value for GyroY
-  data += "GyroZ"":" + String(gyroZ) + ",";  // Include default value for GyroZ
-
-  // Send sensor data over serial
-  Serial.println(data);
-  
-  /*Serial.print(AccX); Serial.print("\t");
-  Serial.print(AccY); Serial.print("\t");
-  Serial.print(AccZ); Serial.print("\t");
-  Serial.print(GyroX); Serial.print("\t");
-  Serial.println(GyroY); Serial.print("\t");
-  Serial.println(GyroZ); Serial.print("\t");*/
-
+  Serial.print(InputX); Serial.print("\t");
+  Serial.print(InputY); Serial.print("\t");
+  Serial.print(SetpointY); Serial.print("\t");
+  Serial.print(OutputX); Serial.print("\t");
+  Serial.println(OutputY); Serial.print("\t");
 
 
 }
